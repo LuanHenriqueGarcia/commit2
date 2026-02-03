@@ -1,0 +1,38 @@
+name: Daily commit (private)
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-commit
+  cancel-in-progress: true
+
+jobs:
+  commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Configure git
+        run: |
+          git config user.name "LuanHenriqueGarcia"
+          git config user.email "114183987+LuanHenriqueGarcia@users.noreply.github.com"
+
+      - name: Make a real change (keep file small)
+        run: |
+          date -u > daily-log.md
+
+      - name: Commit & push
+        run: |
+          git add daily-log.md
+          git commit -m "chore: heartbeat $(date -u +'%Y-%m-%dT%H:%M:%SZ')" || exit 0
+          git push
